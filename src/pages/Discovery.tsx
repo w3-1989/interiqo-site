@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useEffect, useState } from "react";
 import createClientAcc from "../lib/api/createClientAcc"
+import passwordValidation from "../utils/passwordValidation"
 import { useNavigate } from "react-router-dom";
 
 export default function Discovery(){
@@ -10,6 +11,12 @@ export default function Discovery(){
     const [email, setEmail] = useState<string>("")
     const [organisation, setOrganisation] = useState("")
     const [password, setPassword] = useState("")
+    const [passwordCheck, setPasswordCheck] = useState({
+        minLength: false,
+        containsNum: false,
+        containsUppercaseLetter: false,
+        containsSpecialCharacter: false
+    })
 
     const navigate = useNavigate()
 
@@ -19,13 +26,27 @@ export default function Discovery(){
 
             const {data, error} = await supabase
             .from('invite')
-            .select('email')
+            .select('email, claimed')
             .eq("token", searchParams.get("token"))
 
+            // 1. Check if token exists
+            if(!data || data.length === 0 ){
+                return navigate("/")
+            }
+    
+            // 2. Check if token already claimed
+
+            if(data![0].claimed === true){
+                return navigate("/")
+            }
+            
+            // 4. Set email state
+            
+
             if (error){
-                console.log(error)
+                return console.log(error)
             } else{
-                setEmail(data[0].email)
+                return setEmail(data[0].email)
             }
         }
 
@@ -34,10 +55,20 @@ export default function Discovery(){
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
             e.preventDefault()
+            const {data, error} = await supabase
+            .from('invite')
+            .select('email')
+            .eq("token", searchParams.get("token"))
+
+             if(data![0].email !== email){
+                return navigate("/")
+            } if(error){
+                return console.log(error)
+            }
+
             const token = searchParams.get("token")!
             await createClientAcc(email, organisation, password, token)
-            navigate("/discussions")
-            
+            return navigate("/discussions")        
         }
 
 
@@ -68,7 +99,10 @@ export default function Discovery(){
 
                         <input 
                         value={password}
-                        onChange={e => setPassword(e.target.value)}  
+                        onChange={(e) => {
+                            setPassword(e.target.value)
+                            setPasswordCheck(passwordValidation(e.target.value))
+                        }}
                         placeholder="Create password" 
                         className="w-full border border-gray-200 rounded-lg p-2 text-sm" 
                         type="password" />
