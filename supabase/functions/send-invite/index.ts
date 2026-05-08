@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       subject: 'Urgent: You have been invited to start a project!',
       html: `
       <strong>${firstName} you have been invited to start a project</strong>
-      <a href="https://www.interiqo.com/discovery?token=${token}">Click here to start</a>
+      <a href="http://localhost:5173/discovery?token=${token}">Click here to start</a>
       `
     }),
   });

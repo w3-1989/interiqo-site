@@ -1,6 +1,8 @@
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useEffect, useState } from "react";
+import createClientAcc from "../lib/api/createClientAcc"
+import { useNavigate } from "react-router-dom";
 
 export default function Discovery(){
 
@@ -8,6 +10,8 @@ export default function Discovery(){
     const [email, setEmail] = useState<string>("")
     const [organisation, setOrganisation] = useState("")
     const [password, setPassword] = useState("")
+
+    const navigate = useNavigate()
 
 
     useEffect(() => {
@@ -30,6 +34,10 @@ export default function Discovery(){
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
             e.preventDefault()
+            const token = searchParams.get("token")!
+            await createClientAcc(email, organisation, password, token)
+            navigate("/discussions")
+            
         }
 
 
