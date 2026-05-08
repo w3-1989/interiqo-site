@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import createClientAcc from "../lib/api/createClientAcc"
 import passwordValidation from "../utils/passwordValidation"
 import { useNavigate } from "react-router-dom";
+import clsx from "clsx";
 
 export default function Discovery(){
 
@@ -71,6 +72,16 @@ export default function Discovery(){
             return navigate("/discussions")        
         }
 
+        const passwordValidationStyle = {
+            default: "text-gray-400 text-sm",
+            passed: "text-green-400 text-sm"
+        }
+
+        const submitBtnStyles ={
+            default: "w-full bg-gray-400 text-white rounded-lg py-2.5 text-sm font-medium mt-1",
+            active: "w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium mt-1 "
+        }
+
 
   return (
     <>
@@ -106,10 +117,31 @@ export default function Discovery(){
                         placeholder="Create password" 
                         className="w-full border border-gray-200 rounded-lg p-2 text-sm" 
                         type="password" />
+                        <div className="flex flex-col gap-2"> 
+                            <p className={clsx(
+                                passwordValidationStyle.default, 
+                                passwordCheck.minLength && passwordValidationStyle.passed
+                            )}>Minimum 8 characters</p>
+
+                            <p className={clsx(
+                                passwordValidationStyle.default, 
+                                passwordCheck.containsNum && passwordValidationStyle.passed
+                            )}>Must contain one number</p>
+                            <p className={clsx(
+                                passwordValidationStyle.default, 
+                                passwordCheck.containsUppercaseLetter && passwordValidationStyle.passed
+                            )}>Must contain one uppercase letter</p>
+                            <p className={clsx(
+                                passwordValidationStyle.default, 
+                                passwordCheck.containsSpecialCharacter && passwordValidationStyle.passed
+                            )}>Must contain one symbol</p>
+                        </div>
 
                     <button 
-                    className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium mt-1"
+                    className={clsx( Object.values(passwordCheck).every(value => value === true) 
+                        && submitBtnStyles.active ? submitBtnStyles.active : submitBtnStyles.default)}
                     type="submit"
+                    disabled={ !Object.values(passwordCheck).every(value => value === true)}
                     >
                         Begin Discovery
                     </button>
