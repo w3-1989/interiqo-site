@@ -1,18 +1,28 @@
 import {  useState } from "react"
-import sendInvite from "../lib/api/invite"
+import sendInvite from "../../lib/api/sendInvite"
 
 
 
-export default function ClientInvite (){
+export default function SendClientInvite (){
 
     const [firstName, setFirstName] = useState("")
     const [lastName, setLastName] = useState("")
     const [email, setEmail] = useState("")
+    const [emailSent, setEmailSent] = useState(false)
 
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
-        await sendInvite(firstName, lastName, email)
+
+        try {
+         await sendInvite(firstName, lastName, email)
+        setEmailSent(true)
+
+        } catch (error) {
+            console.log("SendClientInvite - error sending email invite", error)
+        }
+
+
     }
 
     return (
@@ -23,7 +33,7 @@ export default function ClientInvite (){
                     <h1 className="text-2xl font-avant">Send a Client Invite</h1>
                     <p className="font-DMSans text-gray-400 ">Send an invite link to your client to start a project</p>
                 </div>
-                <form                     
+                { emailSent ? <p>Invite sent!</p> : <form                     
                 onSubmit={handleSubmit} 
                 className="flex flex-col gap-3">
                     <div className="flex gap-2">
@@ -52,7 +62,7 @@ export default function ClientInvite (){
                     >
                         Send invite
                     </button>
-                </form>
+                </form>}
             </div>
         </section>
         </>

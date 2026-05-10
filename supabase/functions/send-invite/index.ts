@@ -25,13 +25,15 @@ Deno.serve(async (req) => {
   
 
   try {
-    const { firstName, email } = await req.json()
+    const { firstName, lastName, email } = await req.json()
     const token = crypto.randomUUID()
 
    const {error} = await supabase
       .from('invite')
       .insert({
         email: email,
+        first_name: firstName,
+        last_name: lastName,
         token: token ,
         claimed: false,
       })
@@ -50,7 +52,7 @@ Deno.serve(async (req) => {
       subject: 'Urgent: You have been invited to start a project!',
       html: `
       <strong>${firstName} you have been invited to start a project</strong>
-      <a href="http://localhost:5173/discovery?token=${token}">Click here to start</a>
+      <a href="http://localhost:5173/client-account-setup?token=${token}">Click here to start</a>
       `
     }),
   });

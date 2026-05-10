@@ -1,15 +1,24 @@
-import { useSearchParams } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import { useSearchParams, useNavigate} from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
 import { useEffect, useState } from "react";
-import createClientAcc from "../lib/api/createClientAcc"
-import passwordValidation from "../utils/passwordValidation"
-import { useNavigate } from "react-router-dom";
+import createClientAcc from "../../lib/api/createClientAcc"
+import passwordValidation from "../../utils/passwordValidation"
 import clsx from "clsx";
 
-export default function Discovery(){
+const passwordValidationStyle = {
+    default: "text-gray-400 text-sm",
+    passed: "text-green-400 text-sm"
+}
+
+const submitBtnStyles ={
+    default: "w-full bg-gray-400 text-white rounded-lg py-2.5 text-sm font-medium mt-1",
+    active: "w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium mt-1 "
+}
+
+export default function ClientAccountSetup(){
 
     const [searchParams] = useSearchParams();
-    const [email, setEmail] = useState<string>("")
+    const [email, setEmail] = useState("")
     const [organisation, setOrganisation] = useState("")
     const [password, setPassword] = useState("")
     const [passwordCheck, setPasswordCheck] = useState({
@@ -25,30 +34,26 @@ export default function Discovery(){
     useEffect(() => {
         const fetchEmail= async () => {
 
-            const {data, error} = await supabase
+            const {data, error:errorClaimedCheck} = await supabase
             .from('invite')
             .select('email, claimed')
             .eq("token", searchParams.get("token"))
 
-            // 1. Check if token exists
+               if (errorClaimedCheck){
+                console.log("ClientAccountSetup - Error when checking to see if the email had been claimed",errorClaimedCheck)
+                throw errorClaimedCheck
+            } 
+
             if(!data || data.length === 0 ){
                 return navigate("/")
             }
     
-            // 2. Check if token already claimed
-
             if(data![0].claimed === true){
                 return navigate("/")
             }
             
-            // 4. Set email state
+            return setEmail(data[0].email)
             
-
-            if (error){
-                return console.log(error)
-            } else{
-                return setEmail(data[0].email)
-            }
         }
 
         fetchEmail()
@@ -56,31 +61,26 @@ export default function Discovery(){
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
             e.preventDefault()
-            const {data, error} = await supabase
+            const {data, error:errorCrossCheckingEmail} = await supabase
             .from('invite')
             .select('email')
             .eq("token", searchParams.get("token"))
 
+             if(errorCrossCheckingEmail){
+                console.log("ClientAccountSetup - Error corss checking the users email",errorCrossCheckingEmail)
+                throw errorCrossCheckingEmail
+            }
+
              if(data![0].email !== email){
                 return navigate("/")
-            } if(error){
-                return console.log(error)
             }
 
             const token = searchParams.get("token")!
             await createClientAcc(email, organisation, password, token)
-            return navigate("/discussions")        
+            return navigate("/discovery-chat")        
         }
 
-        const passwordValidationStyle = {
-            default: "text-gray-400 text-sm",
-            passed: "text-green-400 text-sm"
-        }
 
-        const submitBtnStyles ={
-            default: "w-full bg-gray-400 text-white rounded-lg py-2.5 text-sm font-medium mt-1",
-            active: "w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium mt-1 "
-        }
 
 
   return (
@@ -88,8 +88,8 @@ export default function Discovery(){
     <section className="h-screen flex flex-col justify-center items-center bg-gray-100">
             <div className="flex flex-col w-120 h-120 rounded-2xl gap-6 bg-white drop-shadow-md  p-5">
                  <div className="flex flex-col text-center mt-6">
-                    <h1 className="text-2xl font-avant">Send a Client Invite</h1>
-                    <p className="font-DMSans text-gray-400 ">Send an invite link to your client to start a project</p>
+                    <h1 className="text-2xl font-avant">Create your account</h1>
+                    <p className="font-DMSans text-gray-400 ">Please enter your details below</p>
                 </div>
                 <form                     
                 onSubmit={handleSubmit} 

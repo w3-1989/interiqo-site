@@ -7,7 +7,8 @@ export default async function sendInvite (firstName: string, lastName: string, e
     })
 
     if(error){
-        console.log(error)
+        console.log("sendInvite - failed to invoke send-invite Edge Function:", error)
+        throw error
     } else {
         console.log("Data received")
     }
