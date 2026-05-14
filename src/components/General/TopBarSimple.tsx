@@ -4,7 +4,12 @@ import { useContext } from "react"
 import { ThemeContext } from "../../context/ThemeContext"
 import {  Moon, Sun } from "lucide-react"
 
-export default function TopBarSimple(){
+interface TopBarSimpleProps {
+  disableToggle?: boolean
+}
+
+
+export default function TopBarSimple({ disableToggle = false }: TopBarSimpleProps){
     const { isDarkMode, setIsDarkMode } = useContext(ThemeContext)
 
     function handleClick (){
@@ -20,6 +25,7 @@ export default function TopBarSimple(){
             
             <button 
             onClick={() => handleClick()}  
+            disabled={disableToggle}
             className="flex items-center justify-center 
             min-h-14 min-w-14 bg-white dark:bg-interiqo-black-400 border border-black/5 cursor-pointer">
              {isDarkMode ? <Sun size={20} color={isDarkMode ? 'white' : 'black'}/> :

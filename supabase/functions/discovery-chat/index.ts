@@ -51,19 +51,27 @@ Deno.serve(async (req) => {
       max_tokens: 1024,
       system: system,
       messages: messages,
+      stream: true,
     }),
   });
 
-  const data = await res.json();
+ const { readable, writable } = new TransformStream()
+res.body!.pipeTo(writable)
 
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+return new Response(readable, {
+  status: 200,
+  headers: { 
+    ...corsHeaders, 
+    'Content-Type': 'text/event-stream',
+    'X-Accel-Buffering': 'no',
+    'Cache-Control': 'no-cache',
+  },
+});
+
   } catch (error: unknown) {
      const message = error instanceof Error ? error.message : 'Unknown error'
     return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
       status: 400,
     })
   }
